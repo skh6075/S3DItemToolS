@@ -11,28 +11,50 @@ use skh6075\S3DItemToolS\S3DItemToolS;
 
 class PlayerSkin{
 
+    /** @var PlayerSkin */
+    private static $instance = null;
+    
     /** @var Skin[] */
     private static $skins = [];
 
+    
+    public static function getInstance (): PlayerSkin{
+        if (self::$instance === null) {
+            self::$instance = new self ();
+        }
+        return self::$instance;
+    }
+    
+    private function __construct () {
+    }
 
-    public static function setPlayerSkin(Player $player): void{
+    /**
+     * @param Player $player
+     */
+    public function setPlayerSkin(Player $player): void{
         self::$skins[$player->getName()] = $player->getSkin();
     }
 
-    public static function getPlayerSkin(Player $player): ?Skin{
+    /**
+     * @param Player $player
+     */
+    public function getPlayerSkin(Player $player): ?Skin{
         return self::$skins[$player->getName()] ?? null;
     }
 
-    public static function callbackSkin(Player $player): void{
-        if (($skin = self::getPlayerSkin($player)) instanceof Skin) {
-            $player->setSkin($skin);
-            foreach (Server::getInstance()->getOnlinePlayers() as $players) {
-                $player->sendSkin([$players, $player]);
-            }
+    /**
+     * @param Player $player
+     */
+    public function callbackSkin(Player $player): void{
+        if (($skin = $this->getPlayerSkin($player)) instanceof Skin) {
+            $this->broadcastChangeSkin($player, $skin);
         }
     }
 
-    private static function convertSkinImage(string $skinData) {
+    /**
+     * @param string $skinData
+     */
+    private function convertSkinImage(string $skinData) {
         $size = strlen($skinData);
         $width = SkinMap::SKIN_WIDTH_SIZE[$size];
         $height = SkinMap::SKIN_HEIGHT_SIZE[$size];
@@ -57,16 +79,22 @@ class PlayerSkin{
         return $image;
     }
 
-    public static function makeSkinImage(Player $player): void{
+    /**
+     * @param Player $player
+     */
+    public function makeSkinImage(Player $player): void{
         $skinPath = S3DItemToolS::getInstance()->getDataFolder() . "skins/" .$player->getName() . ".png";
-        $image = self::convertSkinImage($player->getSkin()->getSkinData());
+        $image = $this->convertSkinImage($player->getSkin()->getSkinData());
         $background = imagecolorallocate($image, 255, 255, 255);
         imagecolortransparent($image, $background);
         imagepng($image, $skinPath);
         imagedestroy($image);
     }
 
-    public static function resetSkinImage(Player $player): void{
+    /**
+     * @param Player $player
+     */
+    public function resetSkinImage(Player $player): void{
         if (file_exists(S3DItemToolS::getInstance()->getDataFolder() . "skins/" . $player->getName() . ".png")) {
             unlink(S3DItemToolS::getInstance()->getDataFolder() . "skins/" . $player->getName() . ".png");
         }
@@ -77,7 +105,11 @@ class PlayerSkin{
             unset (self::$skins[$player->getName()]);
     }
 
-    public static function convertImageMerge(Player $player, string $resource): void{
+    /**
+     * @param Player $player
+     * @param string $resource
+     */
+    public function convertImageMerge(Player $player, string $resource): void{
         $aimage = imagecreatefrompng(S3DItemToolS::getInstance()->getDataFolder() . "skins/" . $player->getName() . ".png");
         $bimage = imagecreatefrompng(S3DItemToolS::getInstance()->getDataFolder() . "images/" . $resource . ".png");
         [$width, $height] = getimagesize(S3DItemToolS::getInstance()->getDataFolder() . "skins/" . $player->getName() . ".png");
@@ -88,6 +120,10 @@ class PlayerSkin{
         imagedestroy($bimage);
     }
 
+    /**
+     * @param Player $player
+     * @param string $resource
+     */
     public static function sendImageSkin(Player $player, string $resource): void{
         $path = S3DItemToolS::getInstance()->getDataFolder() . "images/" . $player->getName() . ".png";
         $image = imagecreatefrompng($path);
@@ -105,10 +141,14 @@ class PlayerSkin{
         }
         imagedestroy($image);
         $skin = new Skin($player->getSkin()->getSkinId(), $skinbytes, "", "geometry." . $resource, file_get_contents(S3DItemToolS::getInstance()->getDataFolder() . "models/" . $resource . ".json"));
-        self::broadcastChangeSkin($player, $skin);
+        $this->broadcastChangeSkin($player, $skin);
     }
 
-    private static function broadcastChangeSkin(Player $player, Skin $skin): void{
+    /**
+     * @param Player $player
+     * @param Skin $skin
+     */
+    private function broadcastChangeSkin(Player $player, Skin $skin): void{
         $player->setSkin($skin);
         foreach(Server::getInstance()->getOnlinePlayers() as $players) {
             $player->sendSkin([$players, $player]);
