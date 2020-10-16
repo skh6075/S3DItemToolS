@@ -3,11 +3,6 @@
 
 namespace skh6075\S3DItemToolS\factory;
 
-/**
- * @return string
- */
-define ("TYPE_JSON", "json");
-
 use skh6075\S3DItemToolS\factory\skin\SkinReflection;
 use skh6075\S3DItemToolS\S3DItemToolS;
 
@@ -51,7 +46,7 @@ class SkinFactory{
 
     private function loadReflections(): void{
         foreach (array_diff(scandir(S3DItemToolS::getInstance()->getDataFolder() . "models" . DIRECTORY_SEPARATOR), [ '.', '..' ]) as $value) {
-            if (!isset(explode('.', $value) [1]) || explode('.', $value) [1] !== TYPE_JSON) {
+            if (!isset(explode('.', $value) [1]) || explode('.', $value) [1] !== "json") {
                 continue;
             }
             self::$reflections[explode('.', $value) [0]] = new SkinReflection(explode('.', $value) [0]);
