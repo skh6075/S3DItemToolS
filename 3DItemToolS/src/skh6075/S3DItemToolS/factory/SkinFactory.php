@@ -3,6 +3,9 @@
 
 namespace skh6075\S3DItemToolS\factory;
 
+/**
+ * @return string
+ */
 define ("TYPE_JSON", "json");
 
 use skh6075\S3DItemToolS\factory\skin\SkinReflection;
@@ -10,6 +13,9 @@ use skh6075\S3DItemToolS\S3DItemToolS;
 
 class SkinFactory{
 
+    /** @var SkinFactory */
+    private static $instance = null;
+    
     /** @var SkinReflection[] */
     private static $reflections = [];
 
@@ -19,28 +25,37 @@ class SkinFactory{
         "images",
         "skins"
     ];
-
-
-    public static function init(): void{
-        self::createData();
-        self::loadReflections();
+    
+    
+    public static function getInstance (): SkinFactory{
+        if (self::$instance === null) {
+            self::$instance = new self ();
+        }
+        return self::$instance;
+    }
+    
+    private function __construct () {
     }
 
-    private static function createData(): void{
+    public function init(): void{
+        $this->createData();
+        $this->loadReflections();
+    }
+
+    private function createData(): void{
         foreach (self::DIRECTORIES as $str) {
             if (!is_dir(S3DItemToolS::getInstance()->getDataFolder() . $str . DIRECTORY_SEPARATOR))
                 @mkdir(S3DItemToolS::getInstance()->getDataFolder() . $str . DIRECTORY_SEPARATOR);
         }
     }
 
-    private static function loadReflections(): void{
+    private function loadReflections(): void{
         foreach (array_diff(scandir(S3DItemToolS::getInstance()->getDataFolder() . "models" . DIRECTORY_SEPARATOR), [ '.', '..' ]) as $value) {
             if (!isset(explode('.', $value) [1]) || explode('.', $value) [1] !== TYPE_JSON) {
                 continue;
             }
             self::$reflections[explode('.', $value) [0]] = new SkinReflection(explode('.', $value) [0]);
         }
-        S3DItemToolS::getInstance()->getLogger()->notice("총 " . count(self::$reflections) . "개의 모댈링을 활성화 했습니다.");
     }
 
     /**
