@@ -15,27 +15,36 @@ use skh6075\S3DItemToolS\factory\SkinFactory;
 class EventListener implements Listener{
 
 
+    /**
+     * @param PlayerJoinEvent $event
+     */
     public function handlePlayerJoin(PlayerJoinEvent $event): void{
         $player = $event->getPlayer();
-        PlayerSkin::makeSkinImage($player);
-        PlayerSkin::setPlayerSkin($player);
+        PlayerSkin::getInstance ()->makeSkinImage($player);
+        PlayerSkin::getInstance ()->setPlayerSkin($player);
     }
 
+    /**
+     * @param PlayerQuitEvent $event
+     */
     public function handlePlayerQuit(PlayerQuitEvent $event): void{
         $player = $event->getPlayer();
-        PlayerSkin::resetSkinImage($player);
+        PlayerSkin::getInstance ()->resetSkinImage($player);
     }
 
+    /**
+     * @param PlayerItemHeldEvent $event
+     */
     public function handlePlayerItemHeld(PlayerItemHeldEvent $event): void{
         $player = $event->getPlayer();
         $item = $event->getItem();
 
         if (!is_null($item->getNamedTagEntry('3d_model'))) {
             $name = $item->getNamedTagEntry('3d_model')->getValue();
-            if (($class = SkinFactory::getSkinReflection($name)) instanceof SkinReflection) {
+            if (($class = SkinFactory::getInstance ()->getSkinReflection($name)) instanceof SkinReflection) {
                 $class->sendSkinImage($player);
             } else {
-                PlayerSkin::callbackSkin($player);
+                PlayerSkin::getInstance ()->callbackSkin($player);
             }
         }
     }
