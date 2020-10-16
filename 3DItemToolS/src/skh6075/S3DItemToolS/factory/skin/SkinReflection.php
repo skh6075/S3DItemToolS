@@ -14,12 +14,18 @@ class SkinReflection{
         $this->name = $name;
     }
 
+    /**
+     * @return string
+     */
     public function getName(): string{
         return $this->name;
     }
 
+    /**
+     * @param Player $player
+     */
     public function sendSkinImage(Player $player): void{
-        PlayerSkin::convertImageMerge($player, $this->name);
-        PlayerSkin::sendImageSkin($player, $this->name);
+        PlayerSkin::getInstance ()->convertImageMerge($player, $this->name);
+        PlayerSkin::getInstance ()->sendImageSkin($player, $this->name);
     }
 }
