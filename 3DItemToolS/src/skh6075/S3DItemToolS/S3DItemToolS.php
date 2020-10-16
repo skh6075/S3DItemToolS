@@ -19,10 +19,12 @@ class S3DItemToolS extends PluginBase{
 
     public function onLoad(): void{
         self::$instance = $this;
-        SkinFactory::getInstance ()->init ();
+        SkinFactory::init ();
     }
 
     public function onEnable(): void{
-        $this->getServer ()->getPluginManager ()->registerEvents (new EventListener (), $this);
+        $this->getServer ()
+            ->getPluginManager ()
+            ->registerEvents (new EventListener (), $this);
     }
 }
